@@ -1,3 +1,5 @@
+output
+personal_workspace/test*
 # ignored folders
 datasets/*
 experiments/*

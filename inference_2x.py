@@ -9,7 +9,7 @@ from realesrgan import RealESRGANer
 from realesrgan.archs.srvgg_arch import SRVGGNetCompact
 
 
-def main():
+def inference(model_path:str,input:str,output:str):
     """Inference demo for Real-ESRGAN.
     """
     parser = argparse.ArgumentParser()
@@ -18,7 +18,7 @@ def main():
         '-n',
         '--model_name',
         type=str,
-        default='RealESRGAN_x4plus',
+        default='RealESRGAN_x2plus',
         help=('Model names: RealESRGAN_x4plus | RealESRNet_x4plus | RealESRGAN_x4plus_anime_6B | RealESRGAN_x2plus | '
               'realesr-animevideov3 | realesr-general-x4v3'))
     parser.add_argument('-o', '--output', type=str, default='results', help='Output folder')
@@ -29,7 +29,7 @@ def main():
         default=0.5,
         help=('Denoise strength. 0 for weak denoise (keep noise), 1 for strong denoise ability. '
               'Only used for the realesr-general-x4v3 model'))
-    parser.add_argument('-s', '--outscale', type=float, default=4, help='The final upsampling scale of the image')
+    parser.add_argument('-s', '--outscale', type=float, default=2, help='The final upsampling scale of the image')
     parser.add_argument(
         '--model_path', type=str, default=None, help='[Option] Model path. Usually, you do not need to specify it')
     parser.add_argument('--suffix', type=str, default='out', help='Suffix of the restored image')
@@ -53,7 +53,9 @@ def main():
         '-g', '--gpu-id', type=int, default=None, help='gpu device to use (default=None) can be 0,1,2 for multi-gpu')
 
     args = parser.parse_args()
-
+    args.output = output
+    args.model_path = model_path
+    args.input = input
     # determine models according to model names
     args.model_name = args.model_name.split('.')[0]
     if args.model_name == 'RealESRGAN_x4plus':  # x4 RRDBNet model
@@ -83,6 +85,8 @@ def main():
             'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-wdn-x4v3.pth',
             'https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth'
         ]  
+        
+    print(netscale)
     # determine model paths
     if args.model_path is not None:
         model_path = args.model_path
@@ -162,4 +166,17 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    model="/home/junkai/project/230522_idphoto_sr/Real-ESRGAN/experiments/finetune_RealESRGANx2plus_4metitu_restore_paired2000/models/net_g_latest.pth"
+    # model="/home/junkai/project/230522_idphoto_sr/Real-ESRGAN/weights/RealESRGAN_x2plus.pth"
+    output="/home/junkai/project/230522_idphoto_sr/Real-ESRGAN/output/newx2"
+    input="/home/junkai/project/230522_idphoto_sr/Real-ESRGAN/512x2"
+    
+    sub_dirs=os.listdir(input)
+    for dir in sub_dirs:
+        if dir == ".DS_Store":
+            continue
+        files=os.listdir(os.path.join(input,dir))
+        for file in files:
+            file_out=os.path.join(output,dir)
+            file_input=os.path.join(input,dir,file)
+            inference(model,file_input,file_out)
